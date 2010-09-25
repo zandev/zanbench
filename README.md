@@ -15,7 +15,7 @@ zanbench let you split the tests methods iterations in runs, and define delay be
 
 zanbench is in it's very first release, more features will come over time. 
 
-Usage: (from ./examples/simple/*)
+Usage: (from ./example/simple/*)
 
         package simple 
         {
@@ -141,4 +141,4 @@ And now run the tests:
             }
         }
 
-For more examples, see the examples directory
+For more examples, see the example directory
