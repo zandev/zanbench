@@ -1,0 +1,16 @@
+zanbench is a lightweight xUnit-like actionscript 3 framework for performances testing. It allow you to write benchmarks in a xUnit like manner :
+
+    * Create a BenchmarkCase by inheriting from BenchmarkCase or implementing Benchmarkable
+    * Write tests methods (basicaly, something you want to loop over)
+    * Tag these tests methods with the "Benchmark" metadata tag
+    * If needed, define callback's actions in four methods :
+         1. prepare() : called before any test method
+         2. setUp() : called before each test method
+         3. tearDown() : called after each test method
+         4. clean() : called after all test methods 
+    * add your BenchmarkCase to a suite
+    * run the suite 
+
+zanbench let you split the tests methods iterations in runs, and define delay between these runs. This allow you to have more control over the system resources usage for very loud benchmarks.
+
+zanbench is in it's very first release, more features will come over time. 

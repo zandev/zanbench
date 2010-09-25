@@ -1,0 +1,8 @@
+WARNING : Some tests may be refactored with Fluint Sequence instead of asyncHandlers.
+
+WARNING : Test the delay consistency for TestRunner, CaseRunner and BenchmarkSuite
+
+WARNING : Test the ResultEvent.RESULT dispatching consistency for CaseRunner and BenchmarkSuite
+
+FEATURE : Add ability to set the test methods execution order, maybe with a metadata parameter like :
+		  [Benchmark(message='message here', order='/[0-1]*/')]

@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project name="Zanbench" basedir="." default="launch-test-src">
+
+	<!-- PROPERTIES ____________________________________________________________________________________________ -->
+
+	<!--=======================-->
+	<!--   User's Properties   -->
+	<!--=======================-->
+
+	<property file="build.properties" />
+
+
+	<!--=======================-->
+	<!--         Global        -->
+	<!--=======================-->
+
+	<property environment="env" />
+	<property name="project.name" value="zanbench" />
+	<property name="project.version" value="" />
+
+
+	<!--=======================-->
+	<!--      Directories      -->
+	<!--=======================-->
+
+	<property name="FLEX_HOME" location="${env.FLEX_HOME}" />
+	<property name="flex.home" location="" />
+	<property name="flex.home.frameworks.dir" location="${flex.home}/frameworks" />
+	<property name="src.dir" value="${basedir}/src" />
+	<property name="test.dir" value="${basedir}/test" />
+	<property name="example.dir" value="${basedir}/example" />
+	<property name="bin.dir" location="${basedir}/bin" />
+	<property name="build.dir" location="${basedir}/build" />
+	<property name="build.test.sources.dir" location="${build.dir}/test-sources" />
+	<property name="build.test.compiled.dir" location="${build.dir}/test-compiled" />
+	<property name="build.release.dir" location="${build.dir}/release" />
+	<property name="build.examples.dir" location="${build.dir}/examples" />
+	<property name="build.doc.dir" location="${build.dir}/docs" />
+	<property name="build.package.dir" location="${build.dir}/package" />
+	<property name="lib.fluint.home" location="${user.home}/lib/flex/flunit/svn/trunk" />
+	<property name="lib.fluint.swc" location="${lib.fluint.home}/fluint/target/classes/fluint.swc" />
+
+
+	<!--=======================-->
+	<!--         Files         -->
+	<!--=======================-->
+
+	<property name="test.sources.swf" value="${build.test.sources.dir}/test-sources.swf" />
+	<property name="test.compiled.swf" value="${build.test.compiled.dir}/test-compiled.swf" />
+	<property name="release.swc" value="${build.release.dir}/${project.name}.swc" />
+	<property name="examples.swf" value="${build.examples.dir}/bin/examples.swf" />
+	<property name="testrunner.name" value="FlexTestRunner.mxml" />
+	<property name="examples.hashmap.runner" value="HashMapExamplesRunner.as" />
+	<property name="examples.simple.runner" value="SimpleExampleRunner.as" />
+
+
+	<!--=======================-->
+	<!--     Properties     -->
+	<!--=======================-->
+
+	<property name="file.encoding" value="UTF-8" />
+	<property name="flashplayer" location="${user.home}/bin/flashplayer" />
+	<property name="flashplayer.version" value="9" />
+
+
+
+	<!-- TASKS ____________________________________________________________________________________________ -->
+
+	<target name="debug-build">
+		<echo>project.version=${project.version}</echo>
+	</target>
+
+
+	<!--=======================-->
+	<!--      Tasks defs       -->
+	<!--=======================-->
+
+	<taskdef resource="flexTasks.tasks" classpath="${flex.home}/ant/lib/flexTasks.jar" />
+	<taskdef resource="flunit" classpath="${lib.fluint.swc}/FluintAnt-1.1.1.jar" />
+
+
+	<!--=======================-->
+	<!--         clean         -->
+	<!--=======================-->
+
+	<target name="clean">
+		<delete dir="${build.dir}" />
+	</target>
+
+
+	<!--=======================-->
+	<!--          init         -->
+	<!--=======================-->
+
+	<target name="init">
+
+		<!-- Check for dependencies -->
+		<available file="${lib.fluint.swc}" property="isAvailable" />
+		<fail unless="isAvailable" />
+
+		<!-- Update build.properties -->
+		<propertyfile file="build.properties">
+			<entry key="project.version" type="string" default="0" />
+			<entry key="flex.home" type="string" default="" />
+			<entry key="lib.fluint.swc" type="string" default="" />
+			<entry key="flashplayer" type="string" default="flashplayer" />
+		</propertyfile>
+
+		<mkdir dir="${build.test.sources.dir}" />
+		<mkdir dir="${build.test.compiled.dir}" />
+		<mkdir dir="${build.release.dir}" />
+		<mkdir dir="${build.examples.dir}" />
+		<mkdir dir="${build.doc.dir}" />
+		<mkdir dir="${build.package.dir}" />
+	</target>
+
+
+	<!--=======================-->
+	<!--          build        -->
+	<!--=======================-->
+
+	<target name="build">
+		<copy todir="${build.release.dir}">
+			<fileset dir="${src.dir}" includes="com/**/*.as" excludes="**/.svn" />
+		</copy>
+		<java jar="${flex.home}/lib/compc.jar" fork="true" failonerror="true">
+			<arg line="+flexlib '${flex.home}/frameworks'" />
+			<arg line="-external-library-path+='${flex.home}/frameworks/libs/flex.swc','${flex.home}/frameworks/libs/framework.swc','${flex.home}/frameworks/libs/rpc.swc','${flex.home}/frameworks/libs/utilities.swc'" />
+			<arg line="-keep-as3-metadata+=Benchmark" />
+			<arg line="-output '${release.swc}'" />
+			<arg line="-source-path+='${build.release.dir}'" />
+			<arg line="-include-sources='${build.release.dir}/com'" />
+		</java>
+		<delete dir="${build.release.dir}/com" />
+	</target>
+
+
+	<!--=======================-->
+	<!--        test-src       -->
+	<!--=======================-->
+
+	<target name="test-src">
+		<property name="main.file" location="${build.test.sources.dir}/${testrunner.name}" />
+		<copy todir="${build.test.sources.dir}">
+			<fileset dir="${src.dir}" excludes="**/.svn" />
+			<fileset dir="${test.dir}" excludes="**/.svn" />
+		</copy>
+		<java jar="${flex.home}/lib/mxmlc.jar" fork="true" failonerror="true">
+			<arg line="+flexlib '${flex.home}/frameworks'" />
+			<arg line="-output='${test.sources.swf}'" />
+			<arg line="-keep-as3-metadata+='Benchmark'" />
+			<arg line="-actionscript-file-encoding='${file.encoding}'" />
+			<arg line="-incremental='true'" />
+			<arg line="-debug='true'" />
+			<arg line="-optimize='false'" />
+			<arg line="-verbose-stacktraces='true'" />
+			<arg line="-include-libraries='${lib.fluint.swc}'" />
+			<arg line="'${main.file}'" />
+		</java>
+	</target>
+
+	<!--=======================-->
+	<!--        test-swc       -->
+	<!--=======================-->
+
+	<target name="test-swc" depends="build">
+		<property name="main.file" location="${build.test.compiled.dir}/${testrunner.name}" />
+		<copy todir="${build.test.compiled.dir}">
+			<fileset dir="${test.dir}" includes="**/*.as, **/*.mxml" excludes="**/.svn" />
+		</copy>
+		<java jar="${flex.home}/lib/mxmlc.jar" fork="true" failonerror="true">
+			<arg line="+flexlib '${flex.home}/frameworks'" />
+			<arg line="-output='${test.compiled.swf}'" />
+			<arg line="-keep-as3-metadata+='Benchmark'" />
+			<arg line="-actionscript-file-encoding='${file.encoding}'" />
+			<arg line="-incremental='true'" />
+			<arg line="-debug='true'" />
+			<arg line="-optimize='false'" />
+			<arg line="-verbose-stacktraces='true'" />
+			<arg line="-include-libraries='${lib.fluint.swc}'" />
+			<arg line="-include-libraries+='${release.swc}'" />
+			<arg line="'${main.file}'" />
+		</java>
+	</target>
+
+
+	<!--=======================-->
+	<!--        examples       -->
+	<!--=======================-->
+
+	<target name="examples" depends="build">
+		<property name="main.file" location="${build.examples.dir}/${examples.hashmap.runner}" />
+		<copy todir="${build.examples.dir}">
+			<fileset dir="${example.dir}" includes="**/*.as, **/*.mxml" excludes="**/.svn" />
+		</copy>
+		<java jar="${flex.home}/lib/mxmlc.jar" fork="true" failonerror="true">
+			<arg line="+flexlib '${flex.home}/frameworks'" />
+			<arg line="-output='${examples.swf}'" />
+			<arg line="-keep-as3-metadata+='Benchmark'" />
+			<arg line="-actionscript-file-encoding='${file.encoding}'" />
+			<arg line="-incremental='false'" />
+			<arg line="-debug='true'" />
+			<arg line="-optimize='true'" />
+			<arg line="-verbose-stacktraces='false'" />
+			<arg line="-include-libraries+='${release.swc}'" />
+			<arg line="'${main.file}'" />
+		</java>
+	</target>
+
+
+	<!--=======================-->
+	<!--        launches       -->
+	<!--=======================-->
+
+	<target name="launch-test-src" depends="test-src">
+		<exec executable="${flashplayer}">
+			<arg line="${test.sources.swf}" />
+		</exec>
+	</target>
+
+	<target name="launch-test-swc" depends="test-swc">
+		<exec executable="${flashplayer}">
+			<arg line="${test.compiled.swf}" />
+		</exec>
+	</target>
+
+	<target name="launch-hashmap-examples" depends="examples">
+		<property name="main.file" location="${build.examples.dir}/${examples.hashmap.runner}" />
+		<exec executable="${flashplayer}">
+			<arg line="${examples.swf}" />
+		</exec>
+	</target>
+
+	<target name="launch-simple-examples">
+		<property name="main.file" location="${build.examples.dir}/${examples.simple.runner}" />
+		<antcall target="examples" />
+		<exec executable="${flashplayer}">
+			<arg line="${examples.swf}" />
+		</exec>
+	</target>
+
+
+	<!--=======================-->
+	<!--          asdoc        -->
+	<!--=======================-->
+
+	<target name="asdoc">
+		<java jar="${flex.home}/lib/asdoc.jar" fork="true" failonerror="true">
+			<arg line="+flexlib '${flex.home}/frameworks'" />
+			<arg line="-doc-sources '${src.dir}'" />
+			<arg line="-source-path+='${src.dir}'" />
+			<arg line="-output '${build.doc.dir}'" />
+		</java>
+	</target>
+
+
+	<!--=======================-->
+	<!--         package       -->
+	<!--=======================-->
+
+	<target name="package" depends="clean, init, build, asdoc">
+		<zip destfile="${build.package.dir}/${project.name}-${project.version}.zip" encoding="utf-8">
+			<zipfileset dir="${src.dir}" includes="com/**/*" excludes="**/.svn" />
+			<zipfileset dir="${build.dir}" includes="docs/**/*" />
+			<zipfileset dir="${build.release.dir}/" includes="*.swc" />
+		</zip>
+	</target>
+
+</project>
